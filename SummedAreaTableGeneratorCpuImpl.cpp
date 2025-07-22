@@ -1,4 +1,7 @@
 ﻿#include "SummedAreaTableGeneratorCpuImpl.h"
+#include "constants.h"
+
+#include <algorithm>
 
 /// Reference for the algorithm: https://en.wikipedia.org/wiki/Summed-area_table
 void SummedAreaTableGeneratorCpuImpl::generate(const DataContainer& data_in, DataContainer& data_out)
@@ -11,21 +14,22 @@ void SummedAreaTableGeneratorCpuImpl::generate(const DataContainer& data_in, Dat
 	{
 		for (int x = 0; x < data_in.width; x++)
 		{
-			int flat_index = y*10 + x;
-			data_out.data[flat_index] = data_in.data[flat_index];
+			int output_value = data_in.data[y * data_in.width + x];
 
 			if (x > 0)
 			{
-				data_out.data[flat_index] += data_out.data[y*10 + (x-1)];
+				output_value += data_out.data[y*data_in.width + (x-1)];
 			}
 			if (y > 0)
 			{
-				data_out.data[flat_index] += data_out.data[(y-1)*10 + x];
+				output_value += data_out.data[(y-1)*data_in.width + x];
 			}
 			if (x > 0 && y > 0)
 			{
-				data_out.data[flat_index] -= data_out.data[(y - 1) * 10 + (x - 1)];
+				output_value -= data_out.data[(y - 1)*data_in.width + (x - 1)];
 			}
+
+			data_out.data[y * data_in.width + x] = std::min(output_value, DATA_MAX_VALUE);
 		}
 	}
 }
