@@ -7,5 +7,8 @@ class SummedAreaTableGenerator
 {
 public:
 	virtual ~SummedAreaTableGenerator() = default; // Virtual destructor needed to destruct inherited classes properly
-	virtual void generate(const DataContainer& data_in, DataContainer& data_out) = 0;
+
+	// Generate a summed area table of data_in to data_out. 
+	// Returns the elapsed time in microseconds for more accurate benchmarking for just the algorithm 
+	virtual int generate(const DataContainer& data_in, DataContainer& data_out) = 0;
 };

@@ -2,20 +2,13 @@
 #include "InputParser.h"
 #include "SummedAreaTableGenerator.h"
 #include "SummedAreaTableGeneratorCpuImpl.h"
+#include "SummedAreaTableGeneratorGpuImpl.h"
 #include "constants.h"
+#include "DirectXHelper.h"
 
 #include <iostream>
 #include <chrono>
-
-using namespace std;
-
-int generate_summed_area_table(SummedAreaTableGenerator& generator, const DataContainer& data_in, DataContainer& data_out)
-{
-	auto start = std::chrono::high_resolution_clock::now();
-	generator.generate(data_in, data_out);
-	auto end = std::chrono::high_resolution_clock::now();
-	return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-}
+#include <stdexcept>
 
 void print_data(DataContainer& data)
 {
@@ -48,13 +41,13 @@ void print_data(DataContainer& data)
 				token += " ";
 			}
 
-			cout << token;
+			std::cout << token;
 		}
 		if (width_limited) 
 		{
-			cout << ".  .  ."; // Add indication of hidden data
+			std::cout << ".  .  ."; // Add indication of hidden data
 		}
-		cout << endl;
+		std::cout << std::endl;
 	}
 
 	if (height_limited)
@@ -64,29 +57,44 @@ void print_data(DataContainer& data)
 		{
 			for (int x = 0; x < width; x++)
 			{
-				cout << " .  ";
+				std::cout << " .  ";
 			}
-			cout << endl;
+			std::cout << std::endl;
 		}
 	}
 }
 
 int main()
 {
-	DataContainer input_data;
-	InputParser::parse("ones_10_x_10.txt", input_data);
+	try
+	{
+		// Read and print the input data
+		DataContainer input_data;
+		InputParser::parse("ones_10_x_10.txt", input_data);
 
-	cout << "Input (" << input_data.width << " x " << input_data.height << "): " << endl;
-	print_data(input_data);
-	cout << endl;
+		std::cout << "Input (" << input_data.width << " x " << input_data.height << "): " << std::endl;
+		print_data(input_data);
+		std::cout << std::endl;
 
-	DataContainer output_data;
-	SummedAreaTableGeneratorCpuImpl generator;
-	int time = generate_summed_area_table(generator, input_data, output_data);
+		// Generate and print the summed area table on the CPU
+		DataContainer cpu_output_data;
+		SummedAreaTableGeneratorCpuImpl cpu_generator;
+		int time = cpu_generator.generate(input_data, cpu_output_data);
+		std::cout << "CPU Output (generated in " << time << " microseconds): " << std::endl;
+		print_data(cpu_output_data);
 
-	cout << "CPU Output (generated in " << time << "ms): " << endl;
-	print_data(output_data);
-	cout << endl;
-
+		// Generate and print the summed area table on the GPU
+		DataContainer gpu_output_data;
+		SummedAreaTableGeneratorGpuImpl gpu_generator;
+		time = gpu_generator.generate(input_data, gpu_output_data);
+		std::cout << "GPU Output (generated in " << time << " microseconds): " << std::endl;
+		print_data(gpu_output_data);
+	}
+	catch (std::runtime_error e)
+	{
+		std::cout << "Error: " << e.what();
+		return -1;
+	}
+	
 	return 0;
 }

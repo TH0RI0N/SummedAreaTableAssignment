@@ -6,5 +6,5 @@
 class SummedAreaTableGeneratorCpuImpl : public SummedAreaTableGenerator
 {
 public:
-	virtual void generate(const DataContainer& data_in, DataContainer& data_out) override;
+	virtual int generate(const DataContainer& data_in, DataContainer& data_out) override;
 };
