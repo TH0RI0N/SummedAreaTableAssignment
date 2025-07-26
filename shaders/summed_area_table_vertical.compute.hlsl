@@ -18,7 +18,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
     for (uint i = 0; i < height; i++)
     {
         index.y = i;
-        current_sum += 1; //buffer[index];
+        current_sum += summed_area_table[index];
         summed_area_table[index] = min(current_sum, 255);
     }
 }

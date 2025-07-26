@@ -32,19 +32,17 @@ private:
 	void compute_summed_area_table(const DataContainer& input_data);
 	void readback_output_data(const DataContainer& input_data, DataContainer& output_data);
 
-	void setup_horizontal_sweep_shader();
-	void setup_vertical_sweep_shader();
+	void setup_shaders();
 	void setup_pipeline_state(ShaderProgram& shader_program);
+	// We can reuse the same root signature for both shaders
+	ComPtr<ID3D12RootSignature> create_root_signature();
 
 	ComPtr<ID3D12Resource> mInputTexture;
 	ComPtr<ID3D12Resource> mOutputTexture;
 	ComPtr<ID3D12Resource> mReadbackBuffer;
-	data_t* mReadbackData = nullptr;
-
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT mPlacedBufferFootprint{};
 	ShaderProgram mHorizontalSweepShaderProgram;
 	ShaderProgram mVerticalSweepShaderProgram;
-
-	ComPtr<ID3D12GraphicsCommandList> mCommandList;
 	ComPtr<ID3D12DescriptorHeap> mDescriptorHeap;
 	unsigned int mDescriptorSize;
 };
