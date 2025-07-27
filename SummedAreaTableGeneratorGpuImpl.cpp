@@ -65,7 +65,7 @@ void SummedAreaTableGeneratorGpuImpl::create_input_texture(const DataContainer& 
     mPlacedBufferFootprint.Footprint.RowPitch = std::ceil(sizeof(data_t) * (float)input_data.width / D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) * D3D12_TEXTURE_DATA_PITCH_ALIGNMENT;
 
     // Create a flat buffer on the upload heap to upload the data into the GPU
-    D3D12_RESOURCE_DESC buffer_description = CD3DX12_RESOURCE_DESC::Buffer(mPlacedBufferFootprint.Footprint.Width * mPlacedBufferFootprint.Footprint.RowPitch);
+    D3D12_RESOURCE_DESC buffer_description = CD3DX12_RESOURCE_DESC::Buffer(mPlacedBufferFootprint.Footprint.Height * mPlacedBufferFootprint.Footprint.RowPitch);
     ComPtr<ID3D12Resource> upload_buffer;
     D3D12_HEAP_PROPERTIES upload_heap = D3D12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
     DirectXHelper::check_result(DirectXHelper::instance()->get_device()->CreateCommittedResource(&upload_heap, D3D12_HEAP_FLAG_NONE,
@@ -121,7 +121,7 @@ void SummedAreaTableGeneratorGpuImpl::create_output_texture(const DataContainer&
         &texture_description, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&mOutputTexture)));
 
     // Create a readback buffer to read the output data back to the CPU
-    D3D12_RESOURCE_DESC buffer_description = CD3DX12_RESOURCE_DESC::Buffer(mPlacedBufferFootprint.Footprint.Width * mPlacedBufferFootprint.Footprint.RowPitch);
+    D3D12_RESOURCE_DESC buffer_description = CD3DX12_RESOURCE_DESC::Buffer(mPlacedBufferFootprint.Footprint.Height * mPlacedBufferFootprint.Footprint.RowPitch);
     D3D12_HEAP_PROPERTIES readback_heap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK);
     DirectXHelper::check_result(DirectXHelper::instance()->get_device()->CreateCommittedResource(&readback_heap, D3D12_HEAP_FLAG_NONE,
         &buffer_description, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&mReadbackBuffer)));
