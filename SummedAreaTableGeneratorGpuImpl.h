@@ -18,7 +18,7 @@ class SummedAreaTableGeneratorGpuImpl : public SummedAreaTableGenerator
 {
 public:
 	SummedAreaTableGeneratorGpuImpl();
-	virtual int generate(const DataContainer& data_in, DataContainer& data_out) override;
+	virtual float generate(const DataContainer& data_in, DataContainer& data_out) override;
 private:
 	struct ShaderProgram
 	{
@@ -32,8 +32,13 @@ private:
 	void compute_summed_area_table(const DataContainer& input_data);
 	void readback_output_data(const DataContainer& input_data, DataContainer& output_data);
 
+	// Load and compile shaders and prepare the ShaderProgram structs
 	void setup_shaders();
+
+	// Create the pipeline state in the given struct from the other inputs.
+	// Thus the shader and root_signature are needed before calling this method
 	void setup_pipeline_state(ShaderProgram& shader_program);
+
 	// We can reuse the same root signature for both shaders
 	ComPtr<ID3D12RootSignature> create_root_signature();
 

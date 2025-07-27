@@ -2,6 +2,8 @@
 
 #include "DataContainer.h"
 
+#include <chrono>
+
 /// A simple interface for a summed area table generator
 class SummedAreaTableGenerator
 {
@@ -9,6 +11,6 @@ public:
 	virtual ~SummedAreaTableGenerator() = default; // Virtual destructor needed to destruct inherited classes properly
 
 	// Generate a summed area table of data_in to data_out. 
-	// Returns the elapsed time in microseconds for more accurate benchmarking for just the algorithm 
-	virtual int generate(const DataContainer& data_in, DataContainer& data_out) = 0;
+	// Returns the elapsed time in milliseconds for just the generation algorithm (no input and output setup)
+	virtual float generate(const DataContainer& data_in, DataContainer& data_out) = 0;
 };

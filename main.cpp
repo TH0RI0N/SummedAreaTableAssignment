@@ -62,6 +62,43 @@ void print_data(DataContainer& data)
 			std::cout << std::endl;
 		}
 	}
+
+	// Add an empty row after the data to make it look cleaner
+	std::cout << std::endl;
+}
+
+// Compare the CPU and GPU data and check that they match, and
+// print statistics
+void compare_data(DataContainer& cpu_data, DataContainer& gpu_data, float cpu_time, float gpu_time)
+{
+	size_t data_size = cpu_data.data.size();
+
+	if (gpu_data.data.size() != data_size)
+	{
+		std::cout << "GPU and CPU output data size doesn't match!" << std::endl;
+		return;
+	}
+
+	for (size_t i = 0; i < data_size; i++)
+	{
+		if (cpu_data.data[i] != gpu_data.data[i])
+		{
+			std::cout << "GPU and CPU output data doesn't match!" << std::endl;
+			return;
+		}
+	}
+
+	std::cout << "GPU and CPU output data matches!" << std::endl;
+
+	float speed_ratio = cpu_time / gpu_time;
+	if (speed_ratio > 1)
+	{
+		std::cout << "GPU generation was " << speed_ratio << "x faster!" << std::endl;
+	}
+	else
+	{
+		std::cout << "CPU generation was " << 1.0f / speed_ratio << "x faster!" << std::endl;
+	}
 }
 
 int main()
@@ -72,23 +109,26 @@ int main()
 		DataContainer input_data;
 		InputParser::parse("ones_10_x_10.txt", input_data);
 
+		std::cout.precision(3);
+
 		std::cout << "Input (" << input_data.width << " x " << input_data.height << "): " << std::endl;
 		print_data(input_data);
-		std::cout << std::endl;
 
 		// Generate and print the summed area table on the CPU
 		DataContainer cpu_output_data;
 		SummedAreaTableGeneratorCpuImpl cpu_generator;
-		int time = cpu_generator.generate(input_data, cpu_output_data);
-		std::cout << "CPU Output (generated in " << time << " microseconds): " << std::endl;
+		float cpu_time = cpu_generator.generate(input_data, cpu_output_data);
+		std::cout << "CPU Output (generated in " << cpu_time << "ms): " << std::endl;
 		print_data(cpu_output_data);
 
 		// Generate and print the summed area table on the GPU
 		DataContainer gpu_output_data;
 		SummedAreaTableGeneratorGpuImpl gpu_generator;
-		time = gpu_generator.generate(input_data, gpu_output_data);
-		std::cout << "GPU Output (generated in " << time << " microseconds): " << std::endl;
+		float gpu_time = gpu_generator.generate(input_data, gpu_output_data);
+		std::cout << "GPU Output (generated in " << gpu_time << "ms): " << std::endl;
 		print_data(gpu_output_data);
+
+		compare_data(cpu_output_data, gpu_output_data, cpu_time, gpu_time);
 	}
 	catch (std::runtime_error e)
 	{

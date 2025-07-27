@@ -23,7 +23,7 @@ SummedAreaTableGeneratorGpuImpl::SummedAreaTableGeneratorGpuImpl()
         << "ms" << std::endl << std::endl;
 }
 
-int SummedAreaTableGeneratorGpuImpl::generate(const DataContainer& data_in, DataContainer& data_out)
+float SummedAreaTableGeneratorGpuImpl::generate(const DataContainer& data_in, DataContainer& data_out)
 {
     create_input_texture(data_in);
     create_output_texture(data_in);
@@ -34,7 +34,7 @@ int SummedAreaTableGeneratorGpuImpl::generate(const DataContainer& data_in, Data
 
     readback_output_data(data_in, data_out);
 
-    return std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    return std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0f;
 }
 
 void SummedAreaTableGeneratorGpuImpl::create_input_texture(const DataContainer& input_data)

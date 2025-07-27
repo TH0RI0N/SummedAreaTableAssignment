@@ -5,7 +5,7 @@
 #include <chrono>
 
 /// Reference for the algorithm: https://en.wikipedia.org/wiki/Summed-area_table
-int SummedAreaTableGeneratorCpuImpl::generate(const DataContainer& data_in, DataContainer& data_out)
+float SummedAreaTableGeneratorCpuImpl::generate(const DataContainer& data_in, DataContainer& data_out)
 {
 	data_out.data.resize(data_in.data.size());
 	data_out.height = data_in.height;
@@ -37,5 +37,5 @@ int SummedAreaTableGeneratorCpuImpl::generate(const DataContainer& data_in, Data
 	}
 
 	auto end = std::chrono::high_resolution_clock::now();
-	return std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+	return std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0f;
 }
