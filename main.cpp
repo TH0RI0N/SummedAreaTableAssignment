@@ -107,7 +107,7 @@ int main()
 	{
 		// Read and print the input data
 		DataContainer input_data;
-		InputParser::parse("ones_10_x_10.txt", input_data);
+		InputParser::parse("data/ones_10_x_10.txt", input_data);
 
 		std::cout.precision(3);
 
