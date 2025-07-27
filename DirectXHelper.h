@@ -26,8 +26,9 @@ public:
 
 	// Can be called perform the first time initialization.
 	// This is automatically done when calling instance() for the first 
-	// time, if init() is not called beforehand
-	static void init();
+	// time, if init() is not called beforehand.
+	// The shader directory path can be given here, or later with set_shader_directory()
+	static void init(const std::string& shader_directory_path = "");
 
 	// Access the Direct3D device
 	ID3D12Device2* get_device();
@@ -45,7 +46,10 @@ public:
 	void execute_command_list_and_wait(ComPtr<ID3D12GraphicsCommandList> command_list);
 
 	// Compile the given shader file and prepare the root signature and pipeline state to use it
-	ComPtr<ID3DBlob> compile_shader(std::string shader_file_path);
+	ComPtr<ID3DBlob> compile_shader(const std::string& shader_file_path);
+
+	// Set the shader directory path
+	void set_shader_directory(const std::string& directory_path);
 private:
 	// Hide the constructor, so the singleton is only accessible through instance()
 	DirectXHelper() = default;
@@ -61,4 +65,5 @@ private:
 	ComPtr<ID3D12CommandAllocator> mDirectCommandAllocator = nullptr;
 	ComPtr<ID3D12Fence> mFence = nullptr;
 	int mFenceValue = 1;
+	std::string mShaderDirectoryPath = "";
 };

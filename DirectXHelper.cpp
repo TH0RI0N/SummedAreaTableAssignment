@@ -4,13 +4,14 @@
 #include <functional>
 #include <format>
 #include <iostream>
+#include <filesystem>
 
 #include <d3dcompiler.h>
 #include "d3dx12.h"
 
 std::unique_ptr<DirectXHelper> DirectXHelper::mInstance = nullptr;
 
-void DirectXHelper::init()
+void DirectXHelper::init(const std::string& shader_directory_path)
 {
     ComPtr<ID3D12Debug> debugController;
     if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
@@ -25,6 +26,10 @@ void DirectXHelper::init()
     mInstance = std::unique_ptr<DirectXHelper>(new DirectXHelper());
     mInstance->init_d3d_device();
     mInstance->init_interfaces();
+    if (!shader_directory_path.empty())
+    {
+        mInstance->set_shader_directory(shader_directory_path);
+    }
 }
 
 void DirectXHelper::check_result(HRESULT result)
@@ -137,14 +142,17 @@ void DirectXHelper::execute_command_list_and_wait(ComPtr<ID3D12GraphicsCommandLi
     mFenceValue = mFenceValue == 1 ? 2 : 1;
 }
 
-ComPtr<ID3DBlob> DirectXHelper::compile_shader(std::string shader_file_path)
+ComPtr<ID3DBlob> DirectXHelper::compile_shader(const std::string& shader_file_path)
 {
-	// Convert to wstring to avoid problems with Windows
-	std::wstring path_wstring(shader_file_path.begin(), shader_file_path.end());
+    std::string total_path = mShaderDirectoryPath + shader_file_path;
+    if (!std::filesystem::exists(total_path))
+    {
+        throw std::runtime_error("Could not find shader file: " + total_path);
+    }
 
-    // Compile the shader
     ComPtr<ID3DBlob> shader;
 	ComPtr<ID3DBlob> compile_error;
+    std::wstring path_wstring(total_path.begin(), total_path.end());
 	D3DCompileFromFile(path_wstring.c_str(), NULL, NULL, "main", "cs_5_1", 0, 0, &shader, &compile_error);
 
 	if (compile_error != NULL)
@@ -155,4 +163,16 @@ ComPtr<ID3DBlob> DirectXHelper::compile_shader(std::string shader_file_path)
 	}
 
     return shader;
+}
+
+void DirectXHelper::set_shader_directory(const std::string& directory_path)
+{
+    if (!directory_path.empty() && directory_path[directory_path.size() - 1] != '/')
+    {
+        mShaderDirectoryPath = directory_path + '/';
+    }
+    else
+    {
+        mShaderDirectoryPath = directory_path;
+    }
 }

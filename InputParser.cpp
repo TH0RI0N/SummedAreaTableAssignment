@@ -6,9 +6,56 @@
 #include <iostream>
 #include <ctype.h>
 #include <stdexcept>
+#include <filesystem>
 
-void InputParser::parse(const std::string& input_file, DataContainer& data_out)
+void InputParser::parse_command_line_arguments(int argument_count, char* arguments[], 
+	std::string& input_file_out, std::string& shader_directory_out, bool& print_help_out)
 {
+	input_file_out = DEFAULT_INPUT_FILE;
+	shader_directory_out = DEFAULT_SHADER_DIRECTORY;
+	print_help_out = false;
+
+	std::string argument;
+	bool next_argument_is_input_file = false;
+	bool next_argument_is_shader_directory = false;
+
+	for (int i = 0; i < argument_count; ++i)
+	{
+		argument = arguments[i];
+
+		if (next_argument_is_input_file)
+		{
+			input_file_out = argument;
+			next_argument_is_input_file = false;
+		}
+		if (next_argument_is_shader_directory)
+		{
+			shader_directory_out = argument;
+			next_argument_is_shader_directory = false;
+		}
+
+		if (argument == "--s" || argument == "-s" || argument == "-shader_dir" || argument == "--shader_dir")
+		{
+			next_argument_is_shader_directory = true;
+		}
+		else if (argument == "--f" || argument == "-f" || argument == "-file" || argument == "--file")
+		{
+			next_argument_is_input_file = true;
+		}
+		else if (argument == "--h" || argument == "-h" || argument == "-help" || argument == "--help")
+		{
+			print_help_out = true;
+		}
+	}
+}
+
+void InputParser::parse_input_file(const std::string& input_file, DataContainer& data_out)
+{
+	if (!std::filesystem::exists(input_file))
+	{
+		throw std::runtime_error("Could not find input file: " + input_file);
+	}
+
 	data_out.data.reserve(INPUT_DATA_MAX_WIDTH * INPUT_DATA_MAX_HEIGHT);
 
 	std::ifstream file(input_file);
@@ -95,6 +142,6 @@ void InputParser::parse_token(std::string& token, DataContainer& data, int& curr
 
 	if (current_line_width > INPUT_DATA_MAX_WIDTH)
 	{
-		throw std::runtime_error("Line " + std::to_string(current_line) + " too much data! The maximum is " + std::to_string(INPUT_DATA_MAX_WIDTH));
+		throw std::runtime_error("Line " + std::to_string(current_line) + " contains too much data! The maximum is " + std::to_string(INPUT_DATA_MAX_WIDTH));
 	}
 }

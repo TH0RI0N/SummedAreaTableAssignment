@@ -8,7 +8,6 @@
 #include <iostream>
 #include <thread>
 
-static const std::string SHADER_DIRECTORY_PATH = "shaders/";
 static const float THREAD_GROUP_SIZE = 64.0f; // Numthreads in the compute shaders needs to be changed also
 
 SummedAreaTableGeneratorGpuImpl::SummedAreaTableGeneratorGpuImpl()
@@ -220,12 +219,12 @@ void SummedAreaTableGeneratorGpuImpl::setup_shaders()
     ComPtr<ID3D12RootSignature> root_signature = create_root_signature();
 
     // Set up the horizontal sweep shader
-    mHorizontalSweepShaderProgram.shader = DirectXHelper::instance()->compile_shader(SHADER_DIRECTORY_PATH + "summed_area_table_horizontal.compute.hlsl");
+    mHorizontalSweepShaderProgram.shader = DirectXHelper::instance()->compile_shader("summed_area_table_horizontal.compute.hlsl");
     mHorizontalSweepShaderProgram.root_signature = root_signature;
     setup_pipeline_state(mHorizontalSweepShaderProgram);
 
     // Set up the vertical sweep shader
-    mVerticalSweepShaderProgram.shader = DirectXHelper::instance()->compile_shader(SHADER_DIRECTORY_PATH + "summed_area_table_vertical.compute.hlsl");
+    mVerticalSweepShaderProgram.shader = DirectXHelper::instance()->compile_shader("summed_area_table_vertical.compute.hlsl");
     mVerticalSweepShaderProgram.root_signature = root_signature;
     setup_pipeline_state(mVerticalSweepShaderProgram);
 

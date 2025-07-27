@@ -21,3 +21,6 @@ static const int PRINT_OVERFLOW_ELLIPSIS_SIZE = 7;
 static const int PRINT_MAX_WIDTH = std::floor((PRINT_TARGET_CONSOLE_WIDTH - PRINT_OVERFLOW_ELLIPSIS_SIZE)
 											/ (float)DATA_MAX_STRING_LENGTH);
 static const int PRINT_MAX_HEIGHT = PRINT_MAX_WIDTH;
+
+static const std::string DEFAULT_INPUT_FILE = "data/square_10_x_10.txt";
+static const std::string DEFAULT_SHADER_DIRECTORY = "shaders";

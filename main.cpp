@@ -53,7 +53,7 @@ void print_data(DataContainer& data)
 	if (height_limited)
 	{
 		std::string dot_token;
-		dot_token.resize(DATA_MAX_STRING_LENGTH, ' ');
+		dot_token.resize(DATA_MAX_STRING_LENGTH + 1, ' ');
 		dot_token[std::floor(DATA_MAX_STRING_LENGTH / 2)] = '.';
 
 		// Add 3 columns of dots for indicating hidden data
@@ -71,8 +71,7 @@ void print_data(DataContainer& data)
 	std::cout << std::endl;
 }
 
-// Compare the CPU and GPU data and check that they match, and
-// print statistics
+// Compare the CPU and GPU data and check that they match, and print statistics
 void compare_data(DataContainer& cpu_data, DataContainer& gpu_data, float cpu_time, float gpu_time)
 {
 	size_t data_size = cpu_data.data.size();
@@ -105,13 +104,41 @@ void compare_data(DataContainer& cpu_data, DataContainer& gpu_data, float cpu_ti
 	}
 }
 
-int main()
+void print_documentation()
+{
+	std::cout << "Summed area table utility" << std::endl << std::endl;
+
+	std::cout << "-d, -shader_dir" << std::endl;
+	std::cout << "The directory path containing the compute shader HLSL files relative to this program." << std::endl << std::endl;
+
+	std::cout << "-f, -file" << std::endl;
+	std::cout << "The input text file to create the summed area table from. The text file should" << std::endl;
+	std::cout << "contain " << DATA_NUM_OF_BITS << " bit unsigned integers separated by any non-number symbol (comma, space, etc.)." << std::endl;
+	std::cout << "Every line needs to have the same number of values and the maximum size is " 
+		<< INPUT_DATA_MAX_WIDTH << " x " << INPUT_DATA_MAX_HEIGHT << "." << std::endl << std::endl;
+}
+
+int main(int argument_count, char* arguments[])
 {
 	try
 	{
-		// Read and print the input data
+		std::string input_file;
+		std::string shader_directory;
+		bool print_help;
+		InputParser::parse_command_line_arguments(argument_count, arguments, input_file, shader_directory, print_help);
+
+		if (print_help)
+		{
+			print_documentation();
+			return 0;
+		}
+
+		DirectXHelper::init(shader_directory);
+
+		std::cout << "Summed area table utility. Type -h or -help for documentation." << std::endl << std::endl;
+
 		DataContainer input_data;
-		InputParser::parse("data/ones_10_x_10.txt", input_data);
+		InputParser::parse_input_file(input_file, input_data);
 
 		std::cout.precision(3);
 
