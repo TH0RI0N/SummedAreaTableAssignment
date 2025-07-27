@@ -9,18 +9,24 @@
 #include <thread>
 
 static const std::string SHADER_DIRECTORY_PATH = "shaders/";
+static const float THREAD_GROUP_SIZE = 64.0f; // Numthreads in the compute shaders needs to be changed also
 
 SummedAreaTableGeneratorGpuImpl::SummedAreaTableGeneratorGpuImpl()
 {
-    std::cout << std::endl << "Compiling shaders..." << std::endl;
-    auto start = std::chrono::high_resolution_clock::now();
-
     setup_shaders();
   
-    auto end = std::chrono::high_resolution_clock::now();
-    std::cout << "Shaders compiled in "
-        << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-        << "ms" << std::endl << std::endl;
+    switch (DATA_NUM_OF_BITS)
+    {
+        case 8:
+            mDataFormat = DXGI_FORMAT_R8_UINT;
+            break;
+        case 16:
+            mDataFormat = DXGI_FORMAT_R16_UINT;
+            break;
+        case 32:
+            mDataFormat = DXGI_FORMAT_R32_UINT;
+            break;
+    }
 }
 
 float SummedAreaTableGeneratorGpuImpl::generate(const DataContainer& data_in, DataContainer& data_out)
@@ -39,8 +45,6 @@ float SummedAreaTableGeneratorGpuImpl::generate(const DataContainer& data_in, Da
 
 void SummedAreaTableGeneratorGpuImpl::create_input_texture(const DataContainer& input_data)
 {
-    static_assert(sizeof(data_t) == sizeof(uint8_t) && "Changing the data size needs to be accounted for in this method!");
-
     // Create the compute shader input texture
     D3D12_RESOURCE_DESC texture_description{};
     texture_description.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
@@ -51,13 +55,13 @@ void SummedAreaTableGeneratorGpuImpl::create_input_texture(const DataContainer& 
     texture_description.DepthOrArraySize = 1;
     texture_description.SampleDesc.Count = 1;
     texture_description.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    texture_description.Format = DXGI_FORMAT_R8_UINT;
+    texture_description.Format = mDataFormat;
     D3D12_HEAP_PROPERTIES default_heap = D3D12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
     DirectXHelper::check_result(DirectXHelper::instance()->get_device()->CreateCommittedResource(&default_heap, D3D12_HEAP_FLAG_NONE,
         &texture_description, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&mInputTexture)));
 
     // Populate the subresource footprint, which describes how a flat buffer maps to the input texture
-    mPlacedBufferFootprint.Footprint.Format = DXGI_FORMAT_R8_UINT;
+    mPlacedBufferFootprint.Footprint.Format = mDataFormat;
     mPlacedBufferFootprint.Footprint.Width = input_data.width;
     mPlacedBufferFootprint.Footprint.Height = input_data.height;
     mPlacedBufferFootprint.Footprint.Depth = 1;
@@ -79,8 +83,8 @@ void SummedAreaTableGeneratorGpuImpl::create_input_texture(const DataContainer& 
     // Copy the input data into the upload buffer
     for (int y = 0; y < input_data.height; y++)
     {
-        data_t* row_start = upload_buffer_start + y*mPlacedBufferFootprint.Footprint.RowPitch;
-        memcpy(row_start, &(input_data.data[y * input_data.width]), sizeof(data_t) * input_data.width);
+        data_t* row_start = upload_buffer_start + y*mPlacedBufferFootprint.Footprint.RowPitch/sizeof(data_t);
+        memcpy(row_start, &(input_data.data[y * input_data.width]), sizeof(data_t)*input_data.width);
     }
 
     // Copy the data from the upload buffer into the texture
@@ -103,8 +107,6 @@ void SummedAreaTableGeneratorGpuImpl::create_input_texture(const DataContainer& 
 
 void SummedAreaTableGeneratorGpuImpl::create_output_texture(const DataContainer& input_data)
 {
-    static_assert(sizeof(data_t) == sizeof(uint8_t) && "Changing the data size needs to be accounted for in this method!");
-
     // Create the compute shader output texture 
     D3D12_RESOURCE_DESC texture_description{};
     texture_description.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
@@ -115,7 +117,7 @@ void SummedAreaTableGeneratorGpuImpl::create_output_texture(const DataContainer&
     texture_description.DepthOrArraySize = 1;
     texture_description.SampleDesc.Count = 1;
     texture_description.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    texture_description.Format = DXGI_FORMAT_R8_UINT;
+    texture_description.Format = mDataFormat;
     D3D12_HEAP_PROPERTIES default_heap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
     DirectXHelper::check_result(DirectXHelper::instance()->get_device()->CreateCommittedResource(&default_heap, D3D12_HEAP_FLAG_NONE,
         &texture_description, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&mOutputTexture)));
@@ -143,8 +145,9 @@ void SummedAreaTableGeneratorGpuImpl::compute_summed_area_table(const DataContai
     horizontal_command_list->SetDescriptorHeaps(1, descriptor_heaps);
     horizontal_command_list->SetComputeRootSignature(mHorizontalSweepShaderProgram.root_signature.Get());
     horizontal_command_list->SetComputeRootDescriptorTable(0, CD3DX12_GPU_DESCRIPTOR_HANDLE(mDescriptorHeap->GetGPUDescriptorHandleForHeapStart(), 0, mDescriptorSize));
+    horizontal_command_list->SetComputeRoot32BitConstant(1, DATA_MAX_VALUE, 0);
     horizontal_command_list->SetPipelineState(mHorizontalSweepShaderProgram.pipeline_state.Get());
-    horizontal_command_list->Dispatch(1, std::ceil(input_data.height / 32.0f), 1);
+    horizontal_command_list->Dispatch(1, std::ceil(input_data.height / THREAD_GROUP_SIZE), 1);
 
     // Add a barrier to ensure the horizontal sweep is finished 
     // before the vertical sweep to avoid a race condition
@@ -164,8 +167,9 @@ void SummedAreaTableGeneratorGpuImpl::compute_summed_area_table(const DataContai
     vertical_command_list->SetDescriptorHeaps(1, descriptor_heaps);
     vertical_command_list->SetComputeRootSignature(mVerticalSweepShaderProgram.root_signature.Get());
     vertical_command_list->SetComputeRootDescriptorTable(0, CD3DX12_GPU_DESCRIPTOR_HANDLE(mDescriptorHeap->GetGPUDescriptorHandleForHeapStart(), 0, mDescriptorSize));
+    vertical_command_list->SetComputeRoot32BitConstant(1, DATA_MAX_VALUE, 0);
     vertical_command_list->SetPipelineState(mVerticalSweepShaderProgram.pipeline_state.Get());
-    vertical_command_list->Dispatch(std::ceil(input_data.width / 32.0f), 1, 1);
+    vertical_command_list->Dispatch(std::ceil(input_data.width / THREAD_GROUP_SIZE), 1, 1);
     DirectXHelper::check_result(vertical_command_list->Close());
 
     DirectXHelper::instance()->execute_command_list_and_wait(vertical_command_list);
@@ -205,7 +209,7 @@ void SummedAreaTableGeneratorGpuImpl::readback_output_data(const DataContainer& 
     // Copy the data from the readback buffer into the output data container 
     for (int y = 0; y < input_data.height; y++)
     {
-        data_t* row_start = readback_data_start + y * mPlacedBufferFootprint.Footprint.RowPitch;
+        data_t* row_start = readback_data_start + y * mPlacedBufferFootprint.Footprint.RowPitch / sizeof(data_t);
         memcpy(&(output_data.data[y*input_data.width]), row_start, sizeof(data_t) * input_data.width);
     }
 }
@@ -249,12 +253,12 @@ ComPtr<ID3D12RootSignature> SummedAreaTableGeneratorGpuImpl::create_root_signatu
     const CD3DX12_STATIC_SAMPLER_DESC sampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR);
 
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC root_signature_desc;
-    CD3DX12_DESCRIPTOR_RANGE1 descriptor_range[2];
-    descriptor_range[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
-    descriptor_range[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0);
+    CD3DX12_DESCRIPTOR_RANGE1 descriptor_range[1];
+    descriptor_range[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 2, 0, 0);
 
-    CD3DX12_ROOT_PARAMETER1 root_parameters[1];
-    root_parameters[0].InitAsDescriptorTable(2, &descriptor_range[0]);
+    CD3DX12_ROOT_PARAMETER1 root_parameters[2];
+    root_parameters[0].InitAsDescriptorTable(1, &descriptor_range[0]);
+    root_parameters[1].InitAsConstants(1, 1);
     root_signature_desc.Init_1_1(_countof(root_parameters), root_parameters, 1, &sampler, D3D12_ROOT_SIGNATURE_FLAG_NONE);
 
     // Serialize the root signature

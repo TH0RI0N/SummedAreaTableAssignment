@@ -9,7 +9,7 @@
 
 void InputParser::parse(const std::string& input_file, DataContainer& data_out)
 {
-	data_out.data.reserve(DATA_MAX_SIZE * DATA_MAX_SIZE);
+	data_out.data.reserve(INPUT_DATA_MAX_WIDTH * INPUT_DATA_MAX_HEIGHT);
 
 	std::ifstream file(input_file);
 	std::string line;
@@ -49,9 +49,13 @@ void InputParser::parse(const std::string& input_file, DataContainer& data_out)
 		{
 			throw std::runtime_error("Line " + std::to_string(current_line) + " has more data than the others!");
 		}
-		else if (current_line_width < first_line_width)
+		if (current_line_width < first_line_width)
 		{
 			throw std::runtime_error("Line " + std::to_string(current_line) + " has less data than the others!");
+		}
+		if (current_line > INPUT_DATA_MAX_HEIGHT)
+		{
+			throw std::runtime_error("The given input file has too many lines! The maximum is " + std::to_string(INPUT_DATA_MAX_HEIGHT));
 		}
 	}
 
@@ -89,8 +93,8 @@ void InputParser::parse_token(std::string& token, DataContainer& data, int& curr
 	token = "";
 	++current_line_width;
 
-	if (current_line_width > DATA_MAX_SIZE)
+	if (current_line_width > INPUT_DATA_MAX_WIDTH)
 	{
-		throw std::runtime_error("Line " + std::to_string(current_line) + " too much data!");
+		throw std::runtime_error("Line " + std::to_string(current_line) + " too much data! The maximum is " + std::to_string(INPUT_DATA_MAX_WIDTH));
 	}
 }

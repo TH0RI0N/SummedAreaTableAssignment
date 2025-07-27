@@ -52,12 +52,16 @@ void print_data(DataContainer& data)
 
 	if (height_limited)
 	{
+		std::string dot_token;
+		dot_token.resize(DATA_MAX_STRING_LENGTH, ' ');
+		dot_token[std::floor(DATA_MAX_STRING_LENGTH / 2)] = '.';
+
 		// Add 3 columns of dots for indicating hidden data
 		for (int y = 0; y < 3; y++)
 		{
 			for (int x = 0; x < width; x++)
 			{
-				std::cout << " .  ";
+				std::cout << dot_token;
 			}
 			std::cout << std::endl;
 		}

@@ -17,7 +17,7 @@ float SummedAreaTableGeneratorCpuImpl::generate(const DataContainer& data_in, Da
 	{
 		for (int x = 0; x < data_in.width; x++)
 		{
-			int output_value = data_in.data[y * data_in.width + x];
+			uint64_t output_value = data_in.data[y * data_in.width + x];
 
 			if (x > 0)
 			{

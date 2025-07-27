@@ -1,6 +1,13 @@
 RWTexture2D<uint> summed_area_table : register(u1);
 
-[numthreads(32, 1, 1)]
+struct DataProperties
+{
+    uint max_value;
+};
+
+ConstantBuffer<DataProperties> data_properties : register(b1, space0);
+
+[numthreads(64, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
     uint width;
@@ -19,6 +26,6 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
     {
         index.y = i;
         current_sum += summed_area_table[index];
-        summed_area_table[index] = min(current_sum, 255);
+        summed_area_table[index] = min(current_sum, data_properties.max_value);
     }
 }

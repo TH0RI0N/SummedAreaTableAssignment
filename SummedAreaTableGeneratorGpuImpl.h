@@ -27,8 +27,14 @@ private:
 		ComPtr<ID3D12PipelineState> pipeline_state;
 	};
 
+	struct ComputeShaderConstants
+	{
+		int data_max_size;
+	};
+
 	void create_input_texture(const DataContainer& input_data);
 	void create_output_texture(const DataContainer& input_data);
+	void create_constant_buffer();
 	void compute_summed_area_table(const DataContainer& input_data);
 	void readback_output_data(const DataContainer& input_data, DataContainer& output_data);
 
@@ -42,9 +48,11 @@ private:
 	// We can reuse the same root signature for both shaders
 	ComPtr<ID3D12RootSignature> create_root_signature();
 
+	DXGI_FORMAT mDataFormat;
 	ComPtr<ID3D12Resource> mInputTexture;
 	ComPtr<ID3D12Resource> mOutputTexture;
 	ComPtr<ID3D12Resource> mReadbackBuffer;
+	ComPtr<ID3D12Resource> mConstantBuffer;
 	D3D12_PLACED_SUBRESOURCE_FOOTPRINT mPlacedBufferFootprint{};
 	ShaderProgram mHorizontalSweepShaderProgram;
 	ShaderProgram mVerticalSweepShaderProgram;
