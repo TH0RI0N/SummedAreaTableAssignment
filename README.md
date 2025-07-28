@@ -28,10 +28,10 @@ The program will take the following arguments:
 The program default values will expect the program to be run in the root directory containing the data and shaders directories. Here are the commands to run the included data files from the root directory:
 
 ```
-./SummedAreaTableUtility.exe -f twos_128_x_128.txt
-./SummedAreaTableUtility.exe -f twos_256_x_256.txt
-./SummedAreaTableUtility.exe -f twos_1024_x_1024.txt
-./SummedAreaTableUtility.exe -f twos_2048_x_2048.txt
+./SummedAreaTableUtility.exe -f data/twos_128_x_128.txt
+./SummedAreaTableUtility.exe -f data/twos_256_x_256.txt
+./SummedAreaTableUtility.exe -f data/twos_1024_x_1024.txt
+./SummedAreaTableUtility.exe -f data/twos_2048_x_2048.txt
 ./SummedAreaTableUtility.exe -f data/descending_10_x_10.txt
 ./SummedAreaTableUtility.exe -f data/large_values_10_x_10.txt
 ./SummedAreaTableUtility.exe -f data/ones_10_x_10.txt
