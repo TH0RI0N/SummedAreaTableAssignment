@@ -1,6 +1,7 @@
 #pragma once
 
-#include "string"
+#include <string>
+
 #include "DataContainer.h"
 
 // Parser for program and text file inputs for the summed area table

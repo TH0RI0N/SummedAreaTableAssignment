@@ -1,10 +1,10 @@
 #pragma once
 
-#include "SummedAreaTableGenerator.h"
-#include "DirectXHelper.h"
-
 #include <wrl/client.h>
 #include <d3d12.h>
+
+#include "SummedAreaTableGenerator.h"
+#include "DirectXHelper.h"
 
 using namespace Microsoft::WRL;
 
@@ -17,7 +17,13 @@ using namespace Microsoft::WRL;
 class SummedAreaTableGeneratorGpuImpl : public SummedAreaTableGenerator
 {
 public:
+	// Create the summed area table generator, initializing the used compute shaders
+	// Will throw std::runtime_error if something goes wrong
 	SummedAreaTableGeneratorGpuImpl();
+
+	// Not copyable or movable
+	SummedAreaTableGeneratorGpuImpl(const SummedAreaTableGeneratorGpuImpl&) = delete;
+
 	virtual float generate(const DataContainer& data_in, DataContainer& data_out) override;
 private:
 	struct ShaderProgram
@@ -34,7 +40,6 @@ private:
 
 	void create_input_texture(const DataContainer& input_data);
 	void create_output_texture(const DataContainer& input_data);
-	void create_constant_buffer();
 	void compute_summed_area_table(const DataContainer& input_data);
 	void readback_output_data(const DataContainer& input_data, DataContainer& output_data);
 
@@ -52,7 +57,6 @@ private:
 	ComPtr<ID3D12Resource> mInputTexture;
 	ComPtr<ID3D12Resource> mOutputTexture;
 	ComPtr<ID3D12Resource> mReadbackBuffer;
-	ComPtr<ID3D12Resource> mConstantBuffer;
 	D3D12_PLACED_SUBRESOURCE_FOOTPRINT mPlacedBufferFootprint{};
 	ShaderProgram mHorizontalSweepShaderProgram;
 	ShaderProgram mVerticalSweepShaderProgram;

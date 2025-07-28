@@ -1,7 +1,8 @@
 #pragma once
 
-#include "constants.h"
 #include <vector>
+
+#include "constants.h"
 
 // Simple container for input and output data for the summed area table
 struct DataContainer

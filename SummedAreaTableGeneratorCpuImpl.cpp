@@ -1,8 +1,9 @@
 ﻿#include "SummedAreaTableGeneratorCpuImpl.h"
-#include "constants.h"
 
 #include <algorithm>
 #include <chrono>
+
+#include "constants.h"
 
 /// Reference for the algorithm: https://en.wikipedia.org/wiki/Summed-area_table
 float SummedAreaTableGeneratorCpuImpl::generate(const DataContainer& data_in, DataContainer& data_out)
@@ -13,9 +14,9 @@ float SummedAreaTableGeneratorCpuImpl::generate(const DataContainer& data_in, Da
 
 	auto start = std::chrono::high_resolution_clock::now();
 
-	for (int y = 0; y < data_in.height; y++)
+	for (int y = 0; y < data_in.height; ++y)
 	{
-		for (int x = 0; x < data_in.width; x++)
+		for (int x = 0; x < data_in.width; ++x)
 		{
 			uint64_t output_value = data_in.data[y * data_in.width + x];
 

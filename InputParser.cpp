@@ -1,12 +1,12 @@
 #include "InputParser.h"
 
-#include "constants.h"
-
 #include <fstream>
 #include <iostream>
 #include <ctype.h>
 #include <stdexcept>
 #include <filesystem>
+
+#include "constants.h"
 
 void InputParser::parse_command_line_arguments(int argument_count, char* arguments[], 
 	std::string& input_file_out, std::string& shader_directory_out, bool& print_help_out)

@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "DataContainer.h"
-
 #include <chrono>
+
+#include "DataContainer.h"
 
 /// A simple interface for a summed area table generator
 class SummedAreaTableGenerator

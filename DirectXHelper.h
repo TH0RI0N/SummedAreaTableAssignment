@@ -5,7 +5,6 @@
 
 #include <wrl/client.h>
 #include <d3d12.h>
-#include <dxgi1_6.h>
 
 using namespace Microsoft::WRL;
 
@@ -42,7 +41,7 @@ public:
 	// Create a new direct command list. The given pointer will point to the new list.
 	ComPtr<ID3D12GraphicsCommandList> create_direct_command_list();
 
-	// Execute the given command list and wait for it's completion
+	// Execute the given command list and wait for its completion
 	void execute_command_list_and_wait(ComPtr<ID3D12GraphicsCommandList> command_list);
 
 	// Compile the given shader file and prepare the root signature and pipeline state to use it

@@ -1,3 +1,7 @@
+#include <iostream>
+#include <chrono>
+#include <stdexcept>
+
 #include "DataContainer.h"
 #include "InputParser.h"
 #include "SummedAreaTableGenerator.h"
@@ -5,10 +9,6 @@
 #include "SummedAreaTableGeneratorGpuImpl.h"
 #include "constants.h"
 #include "DirectXHelper.h"
-
-#include <iostream>
-#include <chrono>
-#include <stdexcept>
 
 void print_data(DataContainer& data)
 {
@@ -28,9 +28,9 @@ void print_data(DataContainer& data)
 	}
 
 	std::string token;
-	for (int y = 0; y < height; y++)
+	for (int y = 0; y < height; ++y)
 	{
-		for (int x = 0; x < width; x++)
+		for (int x = 0; x < width; ++x)
 		{
 			token = std::to_string(data.data[y*data.width + x]);
 
@@ -57,9 +57,9 @@ void print_data(DataContainer& data)
 		dot_token[std::floor(DATA_MAX_STRING_LENGTH / 2)] = '.';
 
 		// Add 3 columns of dots for indicating hidden data
-		for (int y = 0; y < 3; y++)
+		for (int y = 0; y < 3; ++y)
 		{
-			for (int x = 0; x < width; x++)
+			for (int x = 0; x < width; ++x)
 			{
 				std::cout << dot_token;
 			}
@@ -108,7 +108,7 @@ void print_documentation()
 {
 	std::cout << "Summed area table utility" << std::endl << std::endl;
 
-	std::cout << "-d, -shader_dir" << std::endl;
+	std::cout << "-s, -shader_dir" << std::endl;
 	std::cout << "The directory path containing the compute shader HLSL files relative to this program." << std::endl << std::endl;
 
 	std::cout << "-f, -file" << std::endl;

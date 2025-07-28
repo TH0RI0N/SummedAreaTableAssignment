@@ -1,12 +1,13 @@
 #include "SummedAreaTableGeneratorGpuImpl.h"
 
-#include "constants.h"
-#include "DirectXHelper.h"
-#include "d3dx12.h"
-
 #include <chrono>
 #include <iostream>
 #include <thread>
+
+#include "d3dx12.h"
+
+#include "constants.h"
+#include "DirectXHelper.h"
 
 static const float THREAD_GROUP_SIZE = 64.0f; // Numthreads in the compute shaders needs to be changed also
 
@@ -25,6 +26,8 @@ SummedAreaTableGeneratorGpuImpl::SummedAreaTableGeneratorGpuImpl()
         case 32:
             mDataFormat = DXGI_FORMAT_R32_UINT;
             break;
+        default:
+            throw std::runtime_error("Unsupported data type size of "+std::to_string(DATA_NUM_OF_BITS)+" bits!");
     }
 }
 
@@ -80,7 +83,7 @@ void SummedAreaTableGeneratorGpuImpl::create_input_texture(const DataContainer& 
     DirectXHelper::check_result(upload_buffer->Map(0, &read_range, reinterpret_cast<void**>(&upload_buffer_start)));
 
     // Copy the input data into the upload buffer
-    for (int y = 0; y < input_data.height; y++)
+    for (int y = 0; y < input_data.height; ++y)
     {
         data_t* row_start = upload_buffer_start + y*mPlacedBufferFootprint.Footprint.RowPitch/sizeof(data_t);
         memcpy(row_start, &(input_data.data[y * input_data.width]), sizeof(data_t)*input_data.width);
@@ -206,7 +209,7 @@ void SummedAreaTableGeneratorGpuImpl::readback_output_data(const DataContainer& 
     output_data.data.resize(input_data.data.size());
 
     // Copy the data from the readback buffer into the output data container 
-    for (int y = 0; y < input_data.height; y++)
+    for (int y = 0; y < input_data.height; ++y)
     {
         data_t* row_start = readback_data_start + y * mPlacedBufferFootprint.Footprint.RowPitch / sizeof(data_t);
         memcpy(&(output_data.data[y*input_data.width]), row_start, sizeof(data_t) * input_data.width);

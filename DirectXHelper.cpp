@@ -7,6 +7,7 @@
 #include <filesystem>
 
 #include <d3dcompiler.h>
+#include <dxgi1_6.h>
 #include "d3dx12.h"
 
 std::unique_ptr<DirectXHelper> DirectXHelper::mInstance = nullptr;
